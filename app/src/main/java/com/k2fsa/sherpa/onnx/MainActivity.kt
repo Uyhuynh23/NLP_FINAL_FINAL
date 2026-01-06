@@ -1,6 +1,8 @@
 package com.k2fsa.sherpa.onnx
 
+import android.animation.ObjectAnimator
 import android.content.res.AssetManager
+import android.graphics.Color
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
@@ -9,10 +11,16 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
+import androidx.core.view.WindowCompat
+import com.airbnb.lottie.LottieAnimationView
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -31,12 +39,24 @@ class MainActivity : AppCompatActivity() {
     private var stopped: Boolean = false
     private var mediaPlayer: MediaPlayer? = null
 
+    // UI Animation elements
+    private lateinit var lottieMic: LottieAnimationView
+    private lateinit var lottieWaveform: LottieAnimationView
+    private lateinit var statusText: TextView
+    private lateinit var mainCard: CardView
+
     // see
     // https://developer.android.com/reference/kotlin/android/media/AudioTrack
     private lateinit var track: AudioTrack
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Enable edge-to-edge display
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
+
         setContentView(R.layout.activity_main)
 
         Log.i(TAG, "Start to initialize TTS")
@@ -47,17 +67,9 @@ class MainActivity : AppCompatActivity() {
         initAudioTrack()
         Log.i(TAG, "Finish initializing AudioTrack")
 
-        text = findViewById(R.id.text)
-        sid = findViewById(R.id.sid)
-        speed = findViewById(R.id.speed)
-
-        generate = findViewById(R.id.generate)
-        play = findViewById(R.id.play)
-        stop = findViewById(R.id.stop)
-
-        generate.setOnClickListener { onClickGenerate() }
-        play.setOnClickListener { onClickPlay() }
-        stop.setOnClickListener { onClickStop() }
+        initViews()
+        setupClickListeners()
+        startEntranceAnimations()
 
         // Set default values for hidden fields
         sid.setText("0")
@@ -68,6 +80,96 @@ class MainActivity : AppCompatActivity() {
         text.setText(sampleText)
 
         play.isEnabled = false
+        updatePlayButtonState()
+    }
+
+    private fun initViews() {
+        text = findViewById(R.id.text)
+        sid = findViewById(R.id.sid)
+        speed = findViewById(R.id.speed)
+        generate = findViewById(R.id.generate)
+        play = findViewById(R.id.play)
+        stop = findViewById(R.id.stop)
+
+        // Animation elements
+        lottieMic = findViewById(R.id.lottie_mic)
+        lottieWaveform = findViewById(R.id.lottie_waveform)
+        statusText = findViewById(R.id.status_text)
+        mainCard = findViewById(R.id.main_card)
+    }
+
+    private fun setupClickListeners() {
+        generate.setOnClickListener {
+            animateButtonPress(it)
+            onClickGenerate()
+        }
+        play.setOnClickListener {
+            animateButtonPress(it)
+            onClickPlay()
+        }
+        stop.setOnClickListener {
+            animateButtonPress(it)
+            onClickStop()
+        }
+    }
+
+    private fun animateButtonPress(view: View) {
+        view.animate()
+            .scaleX(0.95f)
+            .scaleY(0.95f)
+            .setDuration(100)
+            .withEndAction {
+                view.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(100)
+                    .start()
+            }
+            .start()
+    }
+
+    private fun startEntranceAnimations() {
+        // Card entrance animation
+        mainCard.alpha = 0f
+        mainCard.translationY = 100f
+        mainCard.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(500)
+            .setStartDelay(200)
+            .setInterpolator(AccelerateDecelerateInterpolator())
+            .start()
+    }
+
+    private fun showGeneratingState() {
+        runOnUiThread {
+            lottieWaveform.visibility = View.VISIBLE
+            lottieWaveform.playAnimation()
+            statusText.visibility = View.VISIBLE
+            statusText.text = "🎙️ Generating speech..."
+            statusText.animate().alpha(1f).setDuration(200).start()
+        }
+    }
+
+    private fun hideGeneratingState() {
+        runOnUiThread {
+            lottieWaveform.pauseAnimation()
+            lottieWaveform.visibility = View.GONE
+            statusText.text = "✅ Speech generated successfully!"
+            statusText.postDelayed({
+                statusText.animate().alpha(0f).setDuration(300).withEndAction {
+                    statusText.visibility = View.GONE
+                }.start()
+            }, 2000)
+        }
+    }
+
+    private fun updatePlayButtonState() {
+        if (play.isEnabled) {
+            play.alpha = 1f
+        } else {
+            play.alpha = 0.5f
+        }
     }
 
     private fun initAudioTrack() {
@@ -145,6 +247,7 @@ class MainActivity : AppCompatActivity() {
         play.isEnabled = false
         generate.isEnabled = false
         stopped = false
+        showGeneratingState()
         Thread {
             val audio = tts.generateWithCallback(
                 text = textStr,
@@ -157,6 +260,7 @@ class MainActivity : AppCompatActivity() {
             val ok = audio.samples.size > 0 && audio.save(filename)
             if (ok) {
                 runOnUiThread {
+                    hideGeneratingState()
                     play.isEnabled = true
                     generate.isEnabled = true
                     track.stop()
@@ -222,15 +326,15 @@ class MainActivity : AppCompatActivity() {
         lexicon = null
         dataDir = null
 
-
-        modelDir = "exported"
-        modelName = "model_fixed.onnx"
-        dataDir = "exported/espeak-ng-data"
+//
+//        modelDir = "exported"
+//        modelName = "model_fixed.onnx"
+//        dataDir = "exported/espeak-ng-data"
 
         // Working Piper model (backup):
-//         modelDir = "vits-piper-vi_VN-vais1000-medium"
-//         modelName = "vi_VN-vais1000-medium.onnx"
-//         dataDir = "vits-piper-vi_VN-vais1000-medium/espeak-ng-data"
+         modelDir = "vits-piper-vi_VN-vais1000-medium"
+         modelName = "vi_VN-vais1000-medium.onnx"
+         dataDir = "vits-piper-vi_VN-vais1000-medium/espeak-ng-data"
 
         // Example 1:
         // modelDir = "vits-vctk"

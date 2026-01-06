@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Legacy colors -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -8,17 +9,69 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- New modern colors -->
-    <color name="primary_blue">#FF2196F3</color>
-    <color name="primary_blue_dark">#FF1976D2</color>
-    <color name="accent_orange">#FFFF5722</color>
-    <color name="accent_orange_dark">#FFE64A19</color>
-    <color name="stop_red">#FFF44336</color>
-    <color name="stop_red_dark">#FFD32F2F</color>
-    <color name="background_light">#FFF5F5F5</color>
-    <color name="card_background">#FFFFFFFF</color>
-    <color name="text_primary">#FF212121</color>
-    <color name="text_secondary">#FF757575</color>
-    <color name="text_hint">#FF9E9E9E</color>
-    <color name="divider">#FFBDBDBD</color>
+    <!-- Modern Gradient Colors -->
+    <color name="gradient_start">#667eea</color>
+    <color name="gradient_end">#764ba2</color>
+    <color name="gradient_accent">#f093fb</color>
+
+    <!-- Primary Colors -->
+    <color name="primary">#6C63FF</color>
+    <color name="primary_dark">#5A52D5</color>
+    <color name="primary_light">#8B83FF</color>
+
+    <!-- Secondary/Accent -->
+    <color name="accent">#FF6B9D</color>
+    <color name="accent_dark">#E85A8A</color>
+
+    <!-- Semantic Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="success_dark">#388E3C</color>
+    <color name="warning">#FF9800</color>
+    <color name="error">#F44336</color>
+    <color name="error_dark">#D32F2F</color>
+
+    <!-- UI Colors -->
+    <color name="background_primary">#0F0F23</color>
+    <color name="background_secondary">#1A1A2E</color>
+    <color name="background_light">#F8F9FE</color>
+    <color name="surface">#16213E</color>
+    <color name="surface_light">#FFFFFF</color>
+
+    <!-- Card/Glass Colors -->
+    <color name="card_background">#FFFFFF</color>
+    <color name="card_background_dark">#1F1F3D</color>
+    <color name="glass_background">#33FFFFFF</color>
+    <color name="glass_border">#55FFFFFF</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#212121</color>
+    <color name="text_primary_dark">#FFFFFF</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_secondary_dark">#B0B0B0</color>
+    <color name="text_hint">#9E9E9E</color>
+    <color name="text_on_primary">#FFFFFF</color>
+
+    <!-- Button Colors -->
+    <color name="btn_generate_start">#667eea</color>
+    <color name="btn_generate_end">#764ba2</color>
+    <color name="btn_play_start">#11998e</color>
+    <color name="btn_play_end">#38ef7d</color>
+    <color name="btn_stop_start">#eb3349</color>
+    <color name="btn_stop_end">#f45c43</color>
+
+    <!-- Divider -->
+    <color name="divider">#E0E0E0</color>
+    <color name="divider_dark">#2A2A4A</color>
+
+    <!-- Shimmer -->
+    <color name="shimmer_base">#E0E0E0</color>
+    <color name="shimmer_highlight">#F5F5F5</color>
+
+    <!-- Keep old names for compatibility -->
+    <color name="primary_blue">#6C63FF</color>
+    <color name="primary_blue_dark">#5A52D5</color>
+    <color name="accent_orange">#FF6B9D</color>
+    <color name="accent_orange_dark">#E85A8A</color>
+    <color name="stop_red">#F44336</color>
+    <color name="stop_red_dark">#D32F2F</color>
 </resources>

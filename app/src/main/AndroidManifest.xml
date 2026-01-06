@@ -14,15 +14,29 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SherpaOnnxTts"
         tools:targetApi="31">
+
+        <!-- Landing Page (Launcher) -->
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".LandingActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SherpaOnnxTts.Landing">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
 
+        <!-- Loading Page -->
+        <activity
+            android:name=".LoadingActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SherpaOnnxTts.Landing" />
+
+        <!-- Main TTS Activity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SherpaOnnxTts.Main">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />

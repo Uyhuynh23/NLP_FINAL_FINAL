@@ -1,11 +1,26 @@
 <resources>
-    <string name="app_name">TTS</string>
+    <string name="app_name">Vietnamese TTS</string>
     <string name="sid_label">Speaker ID</string>
     <string name="sid_hint">0</string>
     <string name="speed_label">Speech speed (large->fast)</string>
     <string name="speed_hint">1.0</string>
-    <string name="text_hint">Please input your text here</string>
+    <string name="text_hint">Nhập văn bản của bạn tại đây...\n\nEnter your Vietnamese text here to convert to natural speech.</string>
     <string name="generate">Generate</string>
     <string name="play">Play</string>
     <string name="stop">Stop</string>
+
+    <!-- Landing Page -->
+    <string name="landing_title">Vietnamese TTS</string>
+    <string name="landing_subtitle">Transform text into natural speech</string>
+    <string name="feature_1">On-device AI processing</string>
+    <string name="feature_2">Natural Vietnamese voice</string>
+    <string name="feature_3">Fast &amp; offline capable</string>
+    <string name="try_now">Try Now</string>
+
+    <!-- Main Activity -->
+    <string name="your_text">Your Text</string>
+    <string name="generate_speech">Generate Speech</string>
+    <string name="generating">Generating speech...</string>
+    <string name="ready">Ready to generate</string>
+    <string name="success">Speech generated successfully!</string>
 </resources>
