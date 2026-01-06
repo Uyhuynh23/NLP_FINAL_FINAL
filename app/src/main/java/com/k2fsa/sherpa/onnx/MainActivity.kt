@@ -29,7 +29,7 @@ import java.text.Normalizer
 const val TAG = "sherpa-onnx"
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var tts: OfflineTts
+    private var tts: OfflineTts? = null
     private lateinit var text: EditText
     private lateinit var sid: EditText
     private lateinit var speed: EditText
@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var stop: Button
     private var stopped: Boolean = false
     private var mediaPlayer: MediaPlayer? = null
+    private var isInitialized = false
 
     // UI Animation elements
     private lateinit var lottieMic: LottieAnimationView
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     // see
     // https://developer.android.com/reference/kotlin/android/media/AudioTrack
-    private lateinit var track: AudioTrack
+    private var track: AudioTrack? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,14 +59,6 @@ class MainActivity : AppCompatActivity() {
         window.navigationBarColor = Color.TRANSPARENT
 
         setContentView(R.layout.activity_main)
-
-        Log.i(TAG, "Start to initialize TTS")
-        initTts()
-        Log.i(TAG, "Finish initializing TTS")
-
-        Log.i(TAG, "Start to initialize AudioTrack")
-        initAudioTrack()
-        Log.i(TAG, "Finish initializing AudioTrack")
 
         initViews()
         setupClickListeners()
@@ -80,7 +73,35 @@ class MainActivity : AppCompatActivity() {
         text.setText(sampleText)
 
         play.isEnabled = false
-        updatePlayButtonState()
+        generate.isEnabled = false
+        updateButtonStates()
+
+        // Initialize TTS in background thread
+        Thread {
+            try {
+                Log.i(TAG, "Start to initialize TTS")
+                initTts()
+                Log.i(TAG, "Finish initializing TTS")
+
+                Log.i(TAG, "Start to initialize AudioTrack")
+                initAudioTrack()
+                Log.i(TAG, "Finish initializing AudioTrack")
+
+                isInitialized = true
+
+                runOnUiThread {
+                    generate.isEnabled = true
+                    updateButtonStates()
+                    showStatus("✅ Ready to generate speech")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to initialize TTS: ${e.message}")
+                runOnUiThread {
+                    showStatus("❌ Failed to initialize TTS")
+                    Toast.makeText(this, "Failed to initialize TTS engine", Toast.LENGTH_LONG).show()
+                }
+            }
+        }.start()
     }
 
     private fun initViews() {
@@ -141,13 +162,18 @@ class MainActivity : AppCompatActivity() {
             .start()
     }
 
+    private fun showStatus(message: String) {
+        statusText.visibility = View.VISIBLE
+        statusText.text = message
+        statusText.alpha = 0f
+        statusText.animate().alpha(1f).setDuration(200).start()
+    }
+
     private fun showGeneratingState() {
         runOnUiThread {
             lottieWaveform.visibility = View.VISIBLE
             lottieWaveform.playAnimation()
-            statusText.visibility = View.VISIBLE
-            statusText.text = "🎙️ Generating speech..."
-            statusText.animate().alpha(1f).setDuration(200).start()
+            showStatus("🎙️ Generating speech...")
         }
     }
 
@@ -155,7 +181,7 @@ class MainActivity : AppCompatActivity() {
         runOnUiThread {
             lottieWaveform.pauseAnimation()
             lottieWaveform.visibility = View.GONE
-            statusText.text = "✅ Speech generated successfully!"
+            showStatus("✅ Speech generated successfully!")
             statusText.postDelayed({
                 statusText.animate().alpha(0f).setDuration(300).withEndAction {
                     statusText.visibility = View.GONE
@@ -164,16 +190,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updatePlayButtonState() {
-        if (play.isEnabled) {
-            play.alpha = 1f
-        } else {
-            play.alpha = 0.5f
-        }
+    private fun updateButtonStates() {
+        play.alpha = if (play.isEnabled) 1f else 0.5f
+        generate.alpha = if (generate.isEnabled) 1f else 0.5f
     }
 
     private fun initAudioTrack() {
-        val sampleRate = tts.sampleRate()
+        val sampleRate = tts?.sampleRate() ?: 22050
         val bufLength = AudioTrack.getMinBufferSize(
             sampleRate,
             AudioFormat.CHANNEL_OUT_MONO,
@@ -195,16 +218,16 @@ class MainActivity : AppCompatActivity() {
             attr, format, bufLength, AudioTrack.MODE_STREAM,
             AudioManager.AUDIO_SESSION_ID_GENERATE
         )
-        track.play()
+        track?.play()
     }
 
     // this function is called from C++
     private fun callback(samples: FloatArray): Int {
         if (!stopped) {
-            track.write(samples, 0, samples.size, AudioTrack.WRITE_BLOCKING)
+            track?.write(samples, 0, samples.size, AudioTrack.WRITE_BLOCKING)
             return 1
         } else {
-            track.stop()
+            track?.stop()
             return 0
         }
     }
@@ -240,16 +263,16 @@ class MainActivity : AppCompatActivity() {
         // Normalize Vietnamese text to NFC form for proper diacritic handling
         textStr = Normalizer.normalize(textStr, Normalizer.Form.NFC)
 
-        track.pause()
-        track.flush()
-        track.play()
+        track?.pause()
+        track?.flush()
+        track?.play()
 
         play.isEnabled = false
         generate.isEnabled = false
         stopped = false
         showGeneratingState()
         Thread {
-            val audio = tts.generateWithCallback(
+            val audio = tts?.generateWithCallback(
                 text = textStr,
                 sid = sidInt,
                 speed = speedFloat,
@@ -257,13 +280,13 @@ class MainActivity : AppCompatActivity() {
             )
 
             val filename = application.filesDir.absolutePath + "/generated.wav"
-            val ok = audio.samples.size > 0 && audio.save(filename)
+            val ok = audio?.samples?.size ?: 0 > 0 && audio?.save(filename) == true
             if (ok) {
                 runOnUiThread {
                     hideGeneratingState()
                     play.isEnabled = true
                     generate.isEnabled = true
-                    track.stop()
+                    track?.stop()
                 }
             }
         }.start()
@@ -283,8 +306,8 @@ class MainActivity : AppCompatActivity() {
         stopped = true
         play.isEnabled = true
         generate.isEnabled = true
-        track.pause()
-        track.flush()
+        track?.pause()
+        track?.flush()
         mediaPlayer?.stop()
         mediaPlayer = null
     }
