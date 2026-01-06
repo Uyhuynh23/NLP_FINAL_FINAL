@@ -219,16 +219,16 @@
                         android:id="@+id/play"
                         android:layout_width="0dp"
                         android:layout_height="52dp"
-                        android:layout_weight="1"
                         android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/btn_play"
+                        android:elevation="4dp"
+                        android:stateListAnimator="@null"
                         android:text="▶️  Play"
                         android:textAllCaps="false"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
                         android:textColor="@color/white"
-                        android:background="@drawable/btn_success_gradient"
-                        android:elevation="4dp"
-                        android:stateListAnimator="@null" />
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
 
                     <Button
                         android:id="@+id/stop"

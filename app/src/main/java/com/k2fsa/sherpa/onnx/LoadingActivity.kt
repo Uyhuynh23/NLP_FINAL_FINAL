@@ -53,7 +53,7 @@ class LoadingActivity : AppCompatActivity() {
         // Simulate loading and navigate to MainActivity
         handler.postDelayed({
             navigateToMain()
-        }, 4500) // 3 seconds loading time
+        }, 2000) // 3 seconds loading time
     }
 
     private fun initViews() {

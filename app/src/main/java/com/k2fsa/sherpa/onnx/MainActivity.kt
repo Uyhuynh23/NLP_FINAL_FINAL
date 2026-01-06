@@ -19,6 +19,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import com.airbnb.lottie.LottieAnimationView
 import java.io.File
@@ -90,6 +91,7 @@ class MainActivity : AppCompatActivity() {
                 isInitialized = true
 
                 runOnUiThread {
+                    generate.text = "✨  Generate Speech"
                     generate.isEnabled = true
                     updateButtonStates()
                     showStatus("✅ Ready to generate speech")
@@ -117,6 +119,10 @@ class MainActivity : AppCompatActivity() {
         lottieWaveform = findViewById(R.id.lottie_waveform)
         statusText = findViewById(R.id.status_text)
         mainCard = findViewById(R.id.main_card)
+
+        // Set initial loading state for generate button
+        generate.text = "⏳  Loading Model..."
+        generate.isEnabled = false
     }
 
     private fun setupClickListeners() {
@@ -193,6 +199,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateButtonStates() {
         play.alpha = if (play.isEnabled) 1f else 0.5f
         generate.alpha = if (generate.isEnabled) 1f else 0.5f
+        stop.alpha = if (stop.isEnabled) 1f else 0.5f
     }
 
     private fun initAudioTrack() {
@@ -286,6 +293,7 @@ class MainActivity : AppCompatActivity() {
                     hideGeneratingState()
                     play.isEnabled = true
                     generate.isEnabled = true
+                    updateButtonStates()
                     track?.stop()
                 }
             }
@@ -293,6 +301,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onClickPlay() {
+        // Log the Play button's color information
+        logPlayButtonColor()
+
         val filename = application.filesDir.absolutePath + "/generated.wav"
         mediaPlayer?.stop()
         mediaPlayer = MediaPlayer.create(
@@ -307,6 +318,7 @@ class MainActivity : AppCompatActivity() {
         play.isEnabled = true
         generate.isEnabled = true
         track?.pause()
+        updateButtonStates()
         track?.flush()
         mediaPlayer?.stop()
         mediaPlayer = null
@@ -349,15 +361,15 @@ class MainActivity : AppCompatActivity() {
         lexicon = null
         dataDir = null
 
-//
-//        modelDir = "exported"
-//        modelName = "model_fixed.onnx"
-//        dataDir = "exported/espeak-ng-data"
 
-        // Working Piper model (backup):
-         modelDir = "vits-piper-vi_VN-vais1000-medium"
-         modelName = "vi_VN-vais1000-medium.onnx"
-         dataDir = "vits-piper-vi_VN-vais1000-medium/espeak-ng-data"
+        modelDir = "exported"
+        modelName = "model_fixed.onnx"
+        dataDir = "exported/espeak-ng-data"
+
+//        // Working Piper model (backup):
+//         modelDir = "vits-piper-vi_VN-vais1000-medium"
+//         modelName = "vi_VN-vais1000-medium.onnx"
+//         dataDir = "vits-piper-vi_VN-vais1000-medium/espeak-ng-data"
 
         // Example 1:
         // modelDir = "vits-vctk"
@@ -515,5 +527,27 @@ class MainActivity : AppCompatActivity() {
         } catch (ex: Exception) {
             Log.e(TAG, "Failed to copy $filename, $ex")
         }
+    }
+
+    private fun logPlayButtonColor() {
+        // Get the button's background drawable
+        val drawable = play.background
+
+        // Log basic button information
+        Log.d(TAG, "=== Play Button Color Information ===")
+        Log.d(TAG, "Button background drawable: ${drawable?.javaClass?.simpleName}")
+
+        // Get colors from resources (the actual gradient colors used)
+        val startColor = ContextCompat.getColor(this, R.color.btn_stop_start)
+        val endColor = ContextCompat.getColor(this, R.color.btn_stop_end)
+
+        Log.d(TAG, "Gradient start color: #${String.format("%08X", startColor)}")
+        Log.d(TAG, "Gradient end color: #${String.format("%08X", endColor)}")
+        Log.d(TAG, "Gradient start color (hex): #eb3349")
+        Log.d(TAG, "Gradient end color (hex): #f45c43")
+        Log.d(TAG, "Button text color: #${String.format("%08X", play.currentTextColor)}")
+        Log.d(TAG, "Button alpha: ${play.alpha}")
+        Log.d(TAG, "Button enabled: ${play.isEnabled}")
+        Log.d(TAG, "=====================================")
     }
 }
